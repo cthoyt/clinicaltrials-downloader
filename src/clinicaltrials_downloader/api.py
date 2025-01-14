@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import gzip
 import json
+import logging
+import time
 from collections.abc import Iterable
-from typing import Any, TypeAlias, cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
 import pystow
 import requests
@@ -19,6 +21,8 @@ __all__ = [
     "iterate_download_studies",
     "upload_zenodo",
 ]
+
+logger = logging.getLogger(__name__)
 
 # See field name list at
 # https://clinicaltrials.gov/data-api/about-api/study-data-structure
@@ -50,7 +54,6 @@ SLIM_FIELDS = [
     "StartDateType",  # "Actual" or "Anticipated" (or NaN)
     "ReferencePMID",  # these are tagged as relevant by the author, but not necessarily about the trial
 ]
-
 
 #: The API endpoint for studies
 STUDIES_ENDPOINT_URL = "https://clinicaltrials.gov/api/v2/studies"
@@ -95,7 +98,11 @@ def get_studies(*, force: bool = False) -> list[RawStudy]:
     """
     if PATH.exists() and not force:
         with gzip.open(PATH, "rt") as file:
-            return cast(list[RawStudy], json.load(file))
+            t = time.time()
+            logger.info("loading cached ClinicalTrials.gov")
+            rv = cast(list[RawStudy], json.load(file))
+            logger.info("loaded cached ClinicalTrials.gov in %f seconds", time.time() - t)
+            return rv
 
     studies = list(iterate_download_studies(page_size=MAXIMUM_PAGE_SIZE))
 
@@ -177,5 +184,5 @@ def upload_zenodo(client: zenodo_client.Client | None = None) -> None:
 
         client = Client()
 
-    studies = get_studies(force=True)
+    get_studies(force=True)
     raise NotImplementedError
