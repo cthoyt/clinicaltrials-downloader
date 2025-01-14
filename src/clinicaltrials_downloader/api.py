@@ -103,7 +103,7 @@ def iterate_download_studies(
         "pageSize": page_size,
     }
     if fields is not None:
-        parameters["fields"] = ",".join(DEFAULT_FIELDS)
+        parameters["fields"] = ",".join(fields)
 
     # on the first get, we need to return the count so we can make a progress bar
     # note that countTotal needs to be encoded with a string, and not a proper boolean
