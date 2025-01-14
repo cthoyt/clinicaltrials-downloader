@@ -43,6 +43,14 @@ from clinicaltrials_downloader import get_studies
 studies = get_studies()
 ```
 
+A useful subset can be extracted with:
+
+```python
+from clinicaltrials_downloader import get_studies_slim
+
+studies = get_studies_slim()
+```
+
 ### Command Line Interface
 
 Download all studies with:

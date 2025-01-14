@@ -2,7 +2,10 @@
 
 import gzip
 import json
+import logging
+import time
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any, TypeAlias, cast
 
 import pystow
@@ -11,16 +14,35 @@ from tqdm import tqdm
 
 __all__ = [
     "get_studies",
+    "get_studies_slim",
     "iterate_download_studies",
 ]
 
-# See field name list at
-# https://clinicaltrials.gov/data-api/about-api/study-data-structure
-DEFAULT_FIELDS = [
-    # "protocolSelection.identificationModule.nctId",
+logger = logging.getLogger(__name__)
+
+#: Fields used in the slim dump. See all fields in
+#: https://clinicaltrials.gov/data-api/about-api/study-data-structure
+SLIM_FIELDS = [
     "NCTId",
     "BriefTitle",
-    # "protocolSelection.identificationModule.briefTitle",
+    "Condition",
+    "ConditionMeshTerm",  # ConditionMeshTerm is the name of the disease
+    "ConditionMeshId",
+    "InterventionName",  # InterventionName is the name of the drug/vaccine
+    "InterventionType",
+    "InterventionMeshTerm",
+    "InterventionMeshId",
+    "StudyType",
+    "DesignAllocation",
+    "OverallStatus",
+    "Phase",
+    "WhyStopped",
+    "SecondaryIdType",
+    "SecondaryId",
+    "StartDate",  # Month [day], year: "November 1, 2023", "May 1984" or NaN
+    "StartDateType",  # "Actual" or "Anticipated" (or NaN)
+    # these are tagged as relevant by the author, but not necessarily about the trial
+    "ReferencePMID",
 ]
 
 #: The API endpoint for studies
@@ -28,8 +50,11 @@ STUDIES_ENDPOINT_URL = "https://clinicaltrials.gov/api/v2/studies"
 
 MODULE = pystow.module("bio", "clinicaltrials")
 
-PATH = MODULE.join(name="results.json.gz")
-PATH_SAMPLE = MODULE.join(name="results_sample.json")
+FULL_PATH = MODULE.join(name="results.json.gz")
+FULL_SAMPLE_PATH = MODULE.join(name="results_sample.json")
+
+SLIM_PATH = MODULE.join(name="results_slim.json.gz")
+SLIM_SAMPLE_PATH = MODULE.join(name="results_slim_sample.json")
 
 #: This is the maximum page size allowed by the API
 MAXIMUM_PAGE_SIZE = 1000
@@ -61,16 +86,42 @@ def get_studies(*, force: bool = False) -> list[RawStudy]:
     If you want more control over how downloading works, see
     :func:`iterate_download_studies`.
     """
-    if PATH.exists() and not force:
-        with gzip.open(PATH, "rt") as file:
-            return cast(list[RawStudy], json.load(file))
+    return _help_get_studies(
+        path=FULL_PATH,
+        sample_path=FULL_SAMPLE_PATH,
+        fields=None,  # none means use everything
+        force=force,
+    )
 
-    studies = list(iterate_download_studies(page_size=MAXIMUM_PAGE_SIZE))
 
-    with PATH_SAMPLE.open("w") as file:
+def get_studies_slim(*, force: bool = False) -> list[RawStudy]:
+    """Get a slimmed-down set of studies based on :data:`SLIM_FIELDS`."""
+    return _help_get_studies(
+        path=SLIM_PATH,
+        sample_path=SLIM_SAMPLE_PATH,
+        fields=SLIM_FIELDS,
+        force=force,
+    )
+
+
+def _help_get_studies(
+    *, path: Path, sample_path: Path, fields: list[str] | None, force: bool = False
+) -> list[RawStudy]:
+    if path.exists() and not force:
+        with gzip.open(path, "rt") as file:
+            t = time.time()
+            logger.info("loading cached ClinicalTrials.gov")
+            rv = cast(list[RawStudy], json.load(file))
+            logger.info("loaded cached ClinicalTrials.gov in %f seconds", time.time() - t)
+            return rv
+
+    logger.info("download results to %s", path)
+    studies = list(iterate_download_studies(page_size=MAXIMUM_PAGE_SIZE, fields=fields))
+
+    with sample_path.open("w") as file:
         json.dump(studies[:N_SAMPLE_ROWS], file, indent=2)
 
-    with gzip.open(PATH, "wt") as file:
+    with gzip.open(path, "wt") as file:
         json.dump(studies, file)
 
     return studies
