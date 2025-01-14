@@ -58,6 +58,7 @@ dependencies = [
     "tqdm",
     "typing-extensions",
     "click",
+    "zenodo-client",
 ]
 
 [project.optional-dependencies]

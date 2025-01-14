@@ -3,15 +3,19 @@
 import gzip
 import json
 from collections.abc import Iterable
-from typing import Any, TypeAlias, cast
+from typing import Any, TypeAlias, cast, TYPE_CHECKING
 
 import pystow
 import requests
 from tqdm import tqdm
 
+if TYPE_CHECKING:
+    import zenodo_client
+
 __all__ = [
     "get_studies",
     "iterate_download_studies",
+    "upload_zenodo",
 ]
 
 # See field name list at
@@ -48,6 +52,9 @@ def get_studies(*, force: bool = False) -> list[RawStudy]:
     :return:
         A list of raw dictionaries representing studies in ClinicalTrials.gov,
         as they are returned by the `ClinicalTrials.gov API <https://clinicaltrials.gov/data-api/api>`_
+
+    In January 2025, this took a bit less than 10 minutes to download 522K
+    studies with a decent internet connection.
 
     .. warning::
 
@@ -136,3 +143,14 @@ def iterate_download_studies(
             studies = res["studies"]
             yield from studies
             pbar.update(len(studies))
+
+
+def upload_zenodo(client: zenodo_client.Client | None = None) -> None:
+    """Re-process and upload the current data to Zenodo."""
+    if client is None:
+        from zenodo_client import Client
+
+        client = Client()
+
+
+    raise NotImplementedError
