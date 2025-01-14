@@ -29,6 +29,29 @@ DEFAULT_FIELDS = [
     # "protocolSelection.identificationModule.briefTitle",
 ]
 
+SLIM_FIELDS = [
+    "NCTId",
+    "BriefTitle",
+    "Condition",
+    "ConditionMeshTerm",  # ConditionMeshTerm is the name of the disease
+    "ConditionMeshId",
+    "InterventionName",  # InterventionName is the name of the drug/vaccine
+    "InterventionType",
+    "InterventionMeshTerm",
+    "InterventionMeshId",
+    "StudyType",
+    "DesignAllocation",
+    "OverallStatus",
+    "Phase",
+    "WhyStopped",
+    "SecondaryIdType",
+    "SecondaryId",
+    "StartDate",  # Month [day], year: "November 1, 2023", "May 1984" or NaN
+    "StartDateType",  # "Actual" or "Anticipated" (or NaN)
+    "ReferencePMID",  # these are tagged as relevant by the author, but not necessarily about the trial
+]
+
+
 #: The API endpoint for studies
 STUDIES_ENDPOINT_URL = "https://clinicaltrials.gov/api/v2/studies"
 
