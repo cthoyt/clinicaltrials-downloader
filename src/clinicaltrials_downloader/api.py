@@ -1,5 +1,7 @@
 """Download ClinicalTrials.gov."""
 
+from __future__ import annotations
+
 import gzip
 import json
 from collections.abc import Iterable
@@ -54,7 +56,7 @@ def get_studies(*, force: bool = False) -> list[RawStudy]:
         as they are returned by the `ClinicalTrials.gov API <https://clinicaltrials.gov/data-api/api>`_
 
     In January 2025, this took a bit less than 10 minutes to download 522K
-    studies with a decent internet connection.
+    studies with a decent internet connection. It weights about 2GB gzipped.
 
     .. warning::
 
