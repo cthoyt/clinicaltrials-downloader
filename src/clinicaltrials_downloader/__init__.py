@@ -1,9 +1,8 @@
 """Download and process ClinicalTrials.gov."""
 
-from .api import hello, square
+from .api import get_studies, iterate_download_studies
 
-# being explicit about exports is important!
 __all__ = [
-    "hello",
-    "square",
+    "get_studies",
+    "iterate_download_studies",
 ]

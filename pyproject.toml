@@ -40,7 +40,9 @@ classifiers = [
 keywords = [
     "snekpack", # please keep this keyword to credit the cookiecutter-snekpack template
     "cookiecutter",
-    # TODO add your own free-text keywords
+    "clinical trials",
+    "bioinformatics",
+    "medicine",
 ]
 
 # License Information.
@@ -51,11 +53,11 @@ license-files = [
 
 requires-python = ">=3.10"
 dependencies = [
-    "more_itertools", # missing from itertools in stdlib
-    "tqdm", # progress bars
-    "click",
-    "more_click",
+    "pystow",
+    "requests",
+    "tqdm",
     "typing-extensions",
+    "click",
 ]
 
 [project.optional-dependencies]
