@@ -152,5 +152,5 @@ def upload_zenodo(client: zenodo_client.Client | None = None) -> None:
 
         client = Client()
 
-
+    studies = get_studies(force=True)
     raise NotImplementedError
